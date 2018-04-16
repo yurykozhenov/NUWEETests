@@ -1,6 +1,7 @@
 package ua.edu.nuwm.nuwmtests;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Html;
 import android.webkit.WebView;
@@ -61,18 +62,25 @@ public class TestActivity extends BaseActivity {
     private void createTestForm() {
         LinearLayout layout = findViewById(R.id.test_layout);
 
-        TextView commentView = new TextView(this);
-        commentView.setText(test.comment);
+        TextView commentLabel = new TextView(this);
+        commentLabel.setText("Примітка: ");
+        layout.addView(commentLabel);
+
+        WebView commentView = createWebViewFromHtml(test.comment);
+        LayoutParams commentLayoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        commentLayoutParams.setMargins(0, 0, 0, 40);
+        commentView.setLayoutParams(commentLayoutParams);
 
         layout.addView(commentView);
 
-        for (Question question : test.questions) {
-            WebView questionView = new WebView(this);
+        for (int i = 0; i < test.questions.length; i++) {
+            Question question = test.questions[i];
 
-            question.question = "<link rel=\"stylesheet\" type=\"text/css\" href=\"mathquill.css\" />" + question.question;
-            questionView.loadDataWithBaseURL("file:///android_asset/", question.question, "text/html", "utf-8", null);
+            TextView questionLabel = new TextView(this);
+            questionLabel.setText(String.format("Завдання %s", i + 1));
+            layout.addView(questionLabel);
 
-            layout.addView(questionView);
+            layout.addView(createWebViewFromHtml(question.question));
 
             RadioGroup answersRadioGroup = new RadioGroup(this);
             LayoutParams radioGroupLayoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -89,5 +97,16 @@ public class TestActivity extends BaseActivity {
 
             layout.addView(answersRadioGroup);
         }
+    }
+
+    private WebView createWebViewFromHtml(String html) {
+        WebView webView = new WebView(this);
+
+        html = "<link rel=\"stylesheet\" type=\"text/css\" href=\"mathquill.css\" />" + html;
+        webView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null);
+
+        webView.setBackgroundColor(Color.TRANSPARENT);
+
+        return webView;
     }
 }
