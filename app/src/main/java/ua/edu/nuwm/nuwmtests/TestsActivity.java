@@ -2,7 +2,6 @@ package ua.edu.nuwm.nuwmtests;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -15,7 +14,7 @@ import com.loopj.android.http.TextHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
 import ua.edu.nuwm.nuwmtests.models.Test;
 
-public class TestsActivity extends AppCompatActivity {
+public class TestsActivity extends BaseActivity {
     public static final String EXTRA_TEST_ID = "test_id";
     public static final String EXTRA_TEST_NAME = "test_name";
 

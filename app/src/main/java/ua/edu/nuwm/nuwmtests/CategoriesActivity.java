@@ -2,7 +2,6 @@ package ua.edu.nuwm.nuwmtests;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -15,7 +14,7 @@ import com.loopj.android.http.TextHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
 import ua.edu.nuwm.nuwmtests.models.Category;
 
-public class CategoriesActivity extends AppCompatActivity {
+public class CategoriesActivity extends BaseActivity {
     public static final String EXTRA_CATEGORY_ID = "category_id";
     public static final String EXTRA_CATEGORY_NAME = "category_name";
 

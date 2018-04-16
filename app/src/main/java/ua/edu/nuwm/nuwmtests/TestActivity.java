@@ -2,7 +2,6 @@ package ua.edu.nuwm.nuwmtests;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.webkit.WebView;
 import android.widget.LinearLayout;
@@ -19,7 +18,7 @@ import ua.edu.nuwm.nuwmtests.models.Answer;
 import ua.edu.nuwm.nuwmtests.models.Question;
 import ua.edu.nuwm.nuwmtests.models.Test;
 
-public class TestActivity extends AppCompatActivity {
+public class TestActivity extends BaseActivity {
     private Test test;
     private String testId;
 
