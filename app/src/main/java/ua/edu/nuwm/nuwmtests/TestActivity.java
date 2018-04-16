@@ -1,5 +1,6 @@
 package ua.edu.nuwm.nuwmtests;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -20,20 +21,27 @@ import ua.edu.nuwm.nuwmtests.models.Test;
 
 public class TestActivity extends AppCompatActivity {
     private Test test;
+    private String testId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
 
+        Intent intent = getIntent();
+        testId = intent.getStringExtra(TestsActivity.EXTRA_TEST_ID);
+        String testName = intent.getStringExtra(TestsActivity.EXTRA_TEST_NAME);
+
+        setTitle(testName);
+
         loadTest();
     }
 
     private void loadTest() {
-        RestClient.get("tests", null, new TextHttpResponseHandler() {
+        RestClient.get(String.format("tests/%s", testId), null, new TextHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, String response) {
-                test = new GsonBuilder().create().fromJson(response, Test[].class)[0];
+                test = new GsonBuilder().create().fromJson(response, Test.class);
 
                 createTestForm();
             }

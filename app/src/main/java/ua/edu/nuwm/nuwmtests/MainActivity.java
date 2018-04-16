@@ -15,7 +15,11 @@ import cz.msebera.android.httpclient.Header;
 import ua.edu.nuwm.nuwmtests.models.Subject;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String EXTRA_SUBJECT_ID = "subject_id";
+    public static final String EXTRA_SUBJECT_NAME = "subject_name";
+
     private ArrayAdapter<String> adapter;
+    private Subject[] subjects;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view,
                                     int i, long l) {
                 Intent categoriesIntent = new Intent(MainActivity.this, CategoriesActivity.class);
+                categoriesIntent.putExtra(EXTRA_SUBJECT_ID, subjects[i]._id);
+                categoriesIntent.putExtra(EXTRA_SUBJECT_NAME, subjects[i].name);
+
                 startActivity(categoriesIntent);
             }
         });
@@ -45,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         RestClient.get("subjects", null, new TextHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, String response) {
-                Subject[] subjects = new GsonBuilder().create().fromJson(response, Subject[].class);
+                subjects = new GsonBuilder().create().fromJson(response, Subject[].class);
 
                 for (Subject subject : subjects) {
                     adapter.add(subject.name);
@@ -55,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(int statusCode, Header[] headers, String response,
                                   Throwable throwable) {
-                Subject[] subjects = new GsonBuilder().create().fromJson(
+                subjects = new GsonBuilder().create().fromJson(
                         "[ { \"_id\": \"5ad38a9859b1cb4669c2db44\", \"name\": \"Test1\", \"__v\": 0 }, { \"_id\": \"5ad38ac1f67bbe469a617f63\", \"name\": \"Test2\", \"__v\": 0 } ]",
                         Subject[].class
                 );
