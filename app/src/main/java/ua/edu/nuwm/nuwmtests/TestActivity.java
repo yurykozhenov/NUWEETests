@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.RadioButton;
@@ -16,6 +18,11 @@ import android.widget.TextView;
 
 import com.google.gson.GsonBuilder;
 import com.loopj.android.http.TextHttpResponseHandler;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 import ua.edu.nuwm.nuwmtests.models.Answer;
@@ -26,6 +33,7 @@ public class TestActivity extends BaseActivity {
     private Test test;
     private String testId;
     private LinearLayout layout;
+    private Map<Integer, List<String>> userAnswers = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +79,58 @@ public class TestActivity extends BaseActivity {
         }
 
         this.createQuestions();
+
+        Button submitButton = new Button(this);
+        submitButton.setText("Перевірити");
+        submitButton.setTextColor(Color.WHITE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            submitButton.setBackgroundColor(getColor(R.color.colorPrimary));
+        }
+
+        final TextView scoreTextView = new TextView(TestActivity.this);
+        scoreTextView.setPadding(0, 16, 0, 16);
+        scoreTextView.setTextColor(Color.BLACK);
+        scoreTextView.setTextSize(16);
+
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int score = 0;
+                List<Integer> correctAnswers = new ArrayList<>();
+
+                for (int i = 0; i < test.questions.length; i++) {
+                    Question question = test.questions[i];
+                    List<String> userAnswer = userAnswers.get(i);
+
+                    if (userAnswer == null) {
+                        continue;
+                    }
+
+                    for (Answer answer : question.simpleQuestionAnswers) {
+                        if (userAnswer.contains(answer.text) && answer.correct) {
+                            score += 1;
+                            correctAnswers.add(i);
+                            break;
+                        }
+                    }
+                }
+
+                String scoreText;
+
+                if (score > 0 && score < 5) {
+                    scoreText = String.format("Ви відповіли правильно на %s питання! ", score);
+                } else {
+                    scoreText = String.format("Ви відповіли правильно на %s питаннь! ", score);
+                }
+
+                scoreText = scoreText.concat(correctAnswers.toString());
+                scoreTextView.setText(scoreText);
+            }
+        });
+
+        layout.addView(submitButton);
+        layout.addView(scoreTextView);
     }
 
     private void createComment() {
@@ -98,7 +158,7 @@ public class TestActivity extends BaseActivity {
             if (question.matchingQuestion) {
                 this.createMatchingQuestion(question);
             } else {
-                this.createSimpleQuestion(question);
+                this.createSimpleQuestion(question, i);
             }
 
             layout.addView(this.createDivider());
@@ -121,7 +181,7 @@ public class TestActivity extends BaseActivity {
         layout.addView(questionLabel);
     }
 
-    private void createSimpleQuestion(Question question) {
+    private void createSimpleQuestion(Question question, int questionIndex) {
         int correctAnswers = 0;
 
         for (Answer answer : question.simpleQuestionAnswers) {
@@ -131,13 +191,13 @@ public class TestActivity extends BaseActivity {
         }
 
         if (correctAnswers == 1) {
-            this.createSimpleQuestionWithOneCorrectAnswer(question);
+            this.createSimpleQuestionWithOneCorrectAnswer(question, questionIndex);
         } else {
-            this.createSimpleQuestionWithMultipleCorrectAnswers(question);
+            this.createSimpleQuestionWithMultipleCorrectAnswers(question, questionIndex);
         }
     }
 
-    private void createSimpleQuestionWithOneCorrectAnswer(Question question) {
+    private void createSimpleQuestionWithOneCorrectAnswer(Question question, final int questionIndex) {
         TextView taskLabel = new TextView(this);
         taskLabel.setText("Виберіть одну відповідь:");
         taskLabel.setPadding(16, 0, 0, 0);
@@ -156,10 +216,22 @@ public class TestActivity extends BaseActivity {
             answersRadioGroup.addView(answerRadioButton);
         }
 
+        answersRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                RadioButton radioButton = findViewById(radioGroup.getCheckedRadioButtonId());
+
+                List<String> answersList = new ArrayList<>();
+                answersList.add(radioButton.getText().toString());
+
+                userAnswers.put(questionIndex, answersList);
+            }
+        });
+
         layout.addView(answersRadioGroup);
     }
 
-    private void createSimpleQuestionWithMultipleCorrectAnswers(Question question) {
+    private void createSimpleQuestionWithMultipleCorrectAnswers(Question question, final int questionIndex) {
         TextView taskLabel = new TextView(this);
         taskLabel.setText("Виберіть одну або декілька відповідей:");
         taskLabel.setPadding(16, 0, 0, 0);
@@ -169,6 +241,27 @@ public class TestActivity extends BaseActivity {
             CheckBox answerCheckbox = new CheckBox(this);
             answerCheckbox.setPadding(0, 24, 0, 24);
             answerCheckbox.setText((Html.fromHtml(answer.text)));
+
+            answerCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if (userAnswers.containsKey(questionIndex)) {
+                        List<String> answersList = userAnswers.get(questionIndex);
+
+                        // TODO: Remove if checkbox was unchecked
+                        if (b) {
+                            answersList.add(compoundButton.getText().toString());
+                        } else {
+//                            answersList.remove()
+                        }
+                    } else {
+                        List<String> answersList = new ArrayList<>();
+                        answersList.add(compoundButton.getText().toString());
+
+                        userAnswers.put(questionIndex, answersList);
+                    }
+                }
+            });
 
             layout.addView(answerCheckbox);
         }
